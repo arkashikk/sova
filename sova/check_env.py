@@ -75,6 +75,23 @@ def check_gpu_driver() -> bool:
     return report(ok, f"Видеокарта: {info}")
 
 
+def check_git() -> bool:
+    exe = shutil.which("git")
+    if exe is None:
+        return report(False, "git не найден: установите Git for Windows и откройте новый терминал")
+    result = subprocess.run(
+        [exe, "-C", str(PROJECT_ROOT), "branch", "--show-current"],
+        capture_output=True, text=True, timeout=30,
+    )
+    ok = result.returncode == 0
+    if ok:
+        branch = result.stdout.strip() or "не выбрана"
+        info = f"репозиторий, текущая ветка {branch}"
+    else:
+        info = "папка проекта не репозиторий: выполните git init"
+    return report(ok, f"Git: {info}")
+
+
 def show_packages(names: list[str]) -> None:
     print("Пакеты:")
     for name in names:
@@ -94,6 +111,7 @@ def main() -> int:
         check_path(),
         check_disk(),
         check_gpu_driver(),
+        check_git(),
     ]
     show_packages(["pip", "requests", "pytest", "sova"])
     passed = sum(checks)
