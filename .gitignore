@@ -1,0 +1,35 @@
+# ===== Что Git не должен видеть в проекте СОВА =====
+
+# --- Python: кэш и служебные файлы сборки ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+
+# --- Окружение и секреты ---
+.venv/
+.env
+
+# --- Настройки IDE (у каждого свои) ---
+.idea/
+.vscode/
+
+# --- Данные и модели: только на диске, не в истории ---
+# data/* (а не data/) — чтобы правило-исключение ниже смогло вернуть .gitkeep
+data/*
+!data/.gitkeep
+checkpoints/
+runs/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# --- Windows ---
+Thumbs.db
+desktop.ini

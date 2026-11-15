@@ -1,0 +1,16 @@
+# Описание проекта для pip. Нужно, чтобы поставить пакет sova
+# в окружение в режиме разработки: python -m pip install -e .
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sova"
+version = "0.1.0"   # держите в согласии с __version__ в sova/__init__.py
+description = "СОВА — Система Отбора и Выдачи Ответов (учебный проект)"
+requires-python = ">=3.13"
+
+[tool.setuptools.packages.find]
+# Пакетом считаем только папку sova/, а не tests/, data/ и прочие
+include = ["sova*"]
