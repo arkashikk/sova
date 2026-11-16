@@ -62,7 +62,7 @@ def check_disk() -> bool:
 
 
 def check_gpu_driver() -> bool:
-    # PyTorch - позже
+    # Драйвер NVIDIA: без него видеокарта невидима для любых программ.
     exe = shutil.which("nvidia-smi")
     if exe is None:
         return report(False, "nvidia-smi не найден: драйвер NVIDIA не установлен или не в PATH")
@@ -92,6 +92,28 @@ def check_git() -> bool:
     return report(ok, f"Git: {info}")
 
 
+def check_torch_cuda() -> bool:
+    try:
+        import torch
+    except ImportError:
+        return report(False, "PyTorch не установлен: python -m pip install -r requirements-torch.txt")
+    if torch.version.cuda is None:
+        # Версия вида 2.15.0+cpu или 2.15.0 с PyPI — сборка без CUDA.
+        return report(False, f"PyTorch {torch.__version__} собран без CUDA: переустановите из requirements-torch.txt")
+    if not torch.cuda.is_available():
+        return report(False, f"PyTorch {torch.__version__} не видит видеокарту: обновите драйвер NVIDIA (нужен 580+)")
+    props = torch.cuda.get_device_properties(0)
+    # Мини-вычисление на GPU: убеждаемся, что видеокарта не только видна, но и считает.
+    x = torch.ones(1000, device="cuda")
+    ok = (x * 2).sum().item() == 2000.0
+    memory_gb = props.total_memory / 1024**3
+    return report(
+        ok,
+        f"PyTorch {torch.__version__}: {props.name}, {memory_gb:.1f} ГБ, "
+        f"compute capability {props.major}.{props.minor}",
+    )
+
+
 def show_packages(names: list[str]) -> None:
     print("Пакеты:")
     for name in names:
@@ -112,8 +134,9 @@ def main() -> int:
         check_disk(),
         check_gpu_driver(),
         check_git(),
+        check_torch_cuda(),
     ]
-    show_packages(["pip", "requests", "pytest", "sova"])
+    show_packages(["pip", "requests", "pytest", "numpy", "torch", "sova"])
     passed = sum(checks)
     print(f"Итог: {passed} из {len(checks)} проверок пройдено.")
     return 0 if passed == len(checks) else 1

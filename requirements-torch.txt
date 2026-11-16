@@ -1,0 +1,6 @@
+# PyTorch с поддержкой CUDA для Windows.
+# На PyPI для Windows лежит только версия для процессора (без CUDA),
+# поэтому берём колесо из индекса PyTorch: cu132 = собрано с CUDA 13.2.
+# Установка:  python -m pip install -r requirements-torch.txt
+--index-url https://download.pytorch.org/whl/cu132
+torch==2.15.0+cu132
