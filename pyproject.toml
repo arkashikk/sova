@@ -14,3 +14,7 @@ requires-python = ">=3.13"
 [tool.setuptools.packages.find]
 # Пакетом считаем только папку sova/, а не tests/, data/ и прочие
 include = ["sova*"]
+
+[tool.pytest.ini_options]
+# Пустой список в parametrize — ошибка, а не тихий пропуск
+empty_parameter_set_mark = "fail_at_collect"

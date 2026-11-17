@@ -12,19 +12,26 @@ N = 4096
 REPEATS = 10
 
 
-def time_matmul(device: str, dtype: torch.dtype) -> float:
+def matmul_tflops(n: int, seconds: float):
+    """Скорость в TFLOPS: умножение n×n на n×n — это 2·n³ операций."""
+    if n <= 0 or seconds <= 0:
+        raise ValueError("n и seconds должны быть положительными")
+    return 2 * n**3 / seconds / 1e12
+
+
+def time_matmul(device: str, dtype: torch.dtype, n: int = N, repeats: int = REPEATS) -> float:
     """Возвращает среднее время одного умножения N×N на N×N в секундах."""
-    a = torch.randn(N, N, device=device, dtype=dtype)
-    b = torch.randn(N, N, device=device, dtype=dtype)
-    a @ b
+    a = torch.randn(n, n, device=device, dtype=dtype)
+    b = torch.randn(n, n, device=device, dtype=dtype)
+    a @ b # прогрев
     if device == 'cuda':
-        torch.cuda.synchronize()
+        torch.cuda.synchronize() # дождаться пока видеокарта закончит прогрев
     start = time.perf_counter()
-    for _ in range(REPEATS):
+    for _ in range(repeats):
         a @ b
     if device == 'cuda':
         torch.cuda.synchronize()
-    return (time.perf_counter() - start) / REPEATS
+    return (time.perf_counter() - start) / repeats
 
 
 def check_same_result() -> float:
@@ -52,7 +59,7 @@ def main() -> None:
     for device, dtype in cases:
         seconds = time_matmul(device, dtype)
         base = base or seconds
-        tflops = flop / seconds / 1e12
+        tflops = matmul_tflops(N, seconds)
         print(f"{device:<11}{str(dtype):<16}{seconds * 1000:>10.1f}{tflops:>9.2f}"
               f"   ×{base / seconds:.0f} к CPU")
 
